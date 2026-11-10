@@ -1,0 +1,10 @@
+{
+  "name": "dropfolio",
+  "version": "0.1.0",
+  "description": "Portfolio and airdrop tracker for EVM chains and Solana: per-chain balances, USD values, activity counts, and your own farming list, from public RPCs with no API key.",
+  "type": "module",
+  "bin": { "dropfolio": "./tracker.mjs" },
+  "scripts": { "track": "node tracker.mjs" },
+  "license": "MIT",
+  "engines": { "node": ">=18" }
+}

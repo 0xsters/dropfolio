@@ -1,0 +1,4 @@
+[
+  { "name": "Example Program", "chain": "Base", "status": "farming", "deadline": "2026-12-31", "note": "Replace this file with the programs you actually farm: name, chain, status, deadline, note." },
+  { "name": "Second Example", "chain": "Solana", "status": "waiting for snapshot", "deadline": "", "note": "Delete these examples once your real list is in." }
+]
