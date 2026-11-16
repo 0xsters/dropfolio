@@ -25,11 +25,26 @@ export async function readEvmWallet(address) {
     try {
       const balHex = await evmCall(chain, 'eth_getBalance', [address, 'latest']);
       const nonceHex = await evmCall(chain, 'eth_getTransactionCount', [address, 'latest']);
-      return { chain: chain.name, symbol: chain.symbol, coingecko: chain.coingecko, balance: Number(BigInt(balHex)) / 1e18, txCount: parseInt(nonceHex, 16), ok: true };
+      const tokens = await Promise.all((chain.tokens || []).map((t) => readTokenBalance(chain, t, address)));
+      return { chain: chain.name, symbol: chain.symbol, coingecko: chain.coingecko, balance: Number(BigInt(balHex)) / 1e18, txCount: parseInt(nonceHex, 16), tokens, ok: true };
     } catch (e) {
-      return { chain: chain.name, symbol: chain.symbol, coingecko: chain.coingecko, balance: 0, txCount: 0, ok: false, error: String(e.message || e) };
+      return { chain: chain.name, symbol: chain.symbol, coingecko: chain.coingecko, balance: 0, txCount: 0, tokens: [], ok: false, error: String(e.message || e) };
     }
   }));
+}
+
+// ERC-20 balanceOf(address): selector 0x70a08231 plus the address left-
+// padded to 32 bytes. One token failing never fails the chain: the token
+// row carries ok:false and the rest still print.
+const BALANCE_OF = '0x70a08231';
+async function readTokenBalance(chain, token, address) {
+  try {
+    const data = BALANCE_OF + address.slice(2).padStart(64, '0');
+    const hex = await evmCall(chain, 'eth_call', [{ to: token.address, data }, 'latest']);
+    return { symbol: token.symbol, address: token.address, decimals: token.decimals, coingecko: token.coingecko, balance: Number(BigInt(hex)) / 10 ** token.decimals, ok: true };
+  } catch (e) {
+    return { symbol: token.symbol, address: token.address, decimals: token.decimals, coingecko: token.coingecko, balance: 0, ok: false, error: String(e.message || e) };
+  }
 }
 
 export async function readSolanaWallet(address) {

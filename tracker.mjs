@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // Dropfolio: portfolio and airdrop tracker for EVM chains and Solana.
-// Give it wallet addresses; it prints per-chain native balances, USD values,
-// and the on-chain activity counts that airdrop eligibility checks look at,
-// then appends your own farming list from airdrops.json.
+// Give it wallet addresses; it prints per-chain native balances, the
+// ERC-20 token balances from a curated list, USD values, and the on-chain
+// activity counts that airdrop eligibility checks look at, then appends
+// your own farming list from airdrops.json.
 //
 // Usage:
 //   node tracker.mjs 0xYourEvmAddress [AnotherAddress] [SolanaAddress]
@@ -35,12 +36,18 @@ for (const address of addresses) {
   else console.error('Skipping unrecognized address: ' + address);
 }
 const wallets = await Promise.all(pending);
-for (const w of wallets) for (const r of w.rows) if (r.ok) priceIds.push(r.coingecko);
+for (const w of wallets) for (const r of w.rows) {
+  if (r.ok) priceIds.push(r.coingecko);
+  for (const t of r.tokens || []) if (t.ok) priceIds.push(t.coingecko);
+}
 const prices = await fetchPrices(priceIds);
 let grandTotal = 0;
 for (const w of wallets) {
   let total = 0;
-  for (const r of w.rows) { r.usd = prices[r.coingecko] ? r.balance * prices[r.coingecko] : null; if (r.usd) total += r.usd; }
+  for (const r of w.rows) {
+    r.usd = prices[r.coingecko] ? r.balance * prices[r.coingecko] : null; if (r.usd) total += r.usd;
+    for (const t of r.tokens || []) { t.usd = t.ok && prices[t.coingecko] ? t.balance * prices[t.coingecko] : null; if (t.usd) total += t.usd; }
+  }
   w.totalUsd = total; grandTotal += total;
   report.wallets.push(w);
 }
@@ -60,6 +67,11 @@ for (const w of report.wallets) {
     if (!r.ok) { console.log(r.chain.padEnd(12) + ' read failed: ' + r.error); continue; }
     const tx = r.txCountCapped ? r.txCount + '+' : String(r.txCount);
     console.log(r.chain.padEnd(12) + (r.balance.toFixed(6) + ' ' + r.symbol).padEnd(20) + tx.padEnd(11) + fmtUsd(r.usd));
+    for (const t of r.tokens || []) {
+      if (!t.ok) { console.log(('  ↳ ' + t.symbol).padEnd(12) + ' read failed: ' + t.error); continue; }
+      if (t.balance <= 0) continue;
+      console.log(('  ↳ ' + t.symbol).padEnd(12) + (t.balance.toFixed(6) + ' ' + t.symbol).padEnd(20) + ''.padEnd(11) + fmtUsd(t.usd));
+    }
   }
   console.log('Total value: ' + fmtUsd(w.totalUsd));
 }
