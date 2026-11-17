@@ -19,11 +19,13 @@ node tracker.mjs 0xYourEvmAddress
 node tracker.mjs 0xYourEvmAddress YourSolanaAddress AnotherEvmAddress
 node tracker.mjs --file wallets.txt
 node tracker.mjs --json 0xYourEvmAddress
+node tracker.mjs --html report.html 0xYourEvmAddress
 ```
 
 - Positional arguments: any mix of EVM (0x...) and Solana addresses; each is detected automatically.
 - `--file wallets.txt`: one address per line.
 - `--json`: machine-readable report for scripts.
+- `--html report.html`: also writes the same report as a single self-contained HTML page (inline CSS, no external files) that can be opened offline or shared as-is.
 
 Edit `airdrops.json` to track the programs you farm: name, chain, status, deadline, note.
 
@@ -54,7 +56,7 @@ For EVM chains the count is the account nonce, meaning outgoing transactions sen
 
 - ERC-20 token balances per chain from a curated token list (done 2026-11-16: 53 tokens, 23 chains, verified live).
 - SPL token balances per chain from a curated token list.
-- An HTML dashboard export (`--html report.html`) with the same data.
+- An HTML dashboard export (`--html report.html`) with the same data. (done 2026-11-17: new `html.mjs` renderer plus the `--html` flag in `tracker.mjs`; offline tests 6/6 pass, full pipeline verified end to end against a local stub RPC with console and HTML values identical.)
 - Active-days estimation per chain from transaction history.
 - CSV export for spreadsheets.
 
