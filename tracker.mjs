@@ -9,19 +9,27 @@
 //   node tracker.mjs 0xYourEvmAddress [AnotherAddress] [SolanaAddress]
 //   node tracker.mjs --file wallets.txt        (one address per line)
 //   node tracker.mjs --json 0x...              (machine-readable output)
-import { readFile } from 'node:fs/promises';
+//   node tracker.mjs --html report.html 0x...   (self-contained HTML report)
+import { readFile, writeFile } from 'node:fs/promises';
 import { readEvmWallet, readSolanaWallet, fetchPrices } from './portfolio.mjs';
+import { renderHtml } from './html.mjs';
 
 const args = process.argv.slice(2);
 const jsonOut = args.includes('--json');
-let addresses = args.filter((a) => !a.startsWith('--'));
+const htmlIdx = args.indexOf('--html');
+const htmlOut = htmlIdx >= 0 ? args[htmlIdx + 1] : null;
+let addresses = args.filter((a) => !a.startsWith('--') && a !== htmlOut);
 const fileIdx = args.indexOf('--file');
 if (fileIdx >= 0) {
   const text = await readFile(args[fileIdx + 1], 'utf8');
   addresses = text.split('\n').map((s) => s.trim()).filter(Boolean);
 }
+if (htmlIdx >= 0 && !htmlOut) {
+  console.error('Error: --html needs an output file path.');
+  process.exit(2);
+}
 if (!addresses.length) {
-  console.log('Usage: node tracker.mjs [--json] [--file wallets.txt] <address...>');
+  console.log('Usage: node tracker.mjs [--json] [--html report.html] [--file wallets.txt] <address...>');
   process.exit(2);
 }
 const isEvm = (a) => /^0x[0-9a-fA-F]{40}$/.test(a);
@@ -55,6 +63,11 @@ try {
   const list = JSON.parse(await readFile(new URL('./airdrops.json', import.meta.url), 'utf8'));
   report.farming = list.filter((x) => x && x.name);
 } catch { report.farming = []; }
+
+if (htmlOut) {
+  await writeFile(htmlOut, renderHtml(report, grandTotal), 'utf8');
+  console.error('Wrote HTML report: ' + htmlOut);
+}
 
 if (jsonOut) { console.log(JSON.stringify(report, null, 2)); process.exit(0); }
 
