@@ -10,15 +10,19 @@
 //   node tracker.mjs --file wallets.txt        (one address per line)
 //   node tracker.mjs --json 0x...              (machine-readable output)
 //   node tracker.mjs --html report.html 0x...   (self-contained HTML report)
+//   node tracker.mjs --csv report.csv 0x...     (per-chain rows as CSV)
 import { readFile, writeFile } from 'node:fs/promises';
 import { readEvmWallet, readSolanaWallet, fetchPrices } from './portfolio.mjs';
 import { renderHtml } from './html.mjs';
+import { renderCsv } from './csv.mjs';
 
 const args = process.argv.slice(2);
 const jsonOut = args.includes('--json');
 const htmlIdx = args.indexOf('--html');
 const htmlOut = htmlIdx >= 0 ? args[htmlIdx + 1] : null;
-let addresses = args.filter((a) => !a.startsWith('--') && a !== htmlOut);
+const csvIdx = args.indexOf('--csv');
+const csvOut = csvIdx >= 0 ? args[csvIdx + 1] : null;
+let addresses = args.filter((a) => !a.startsWith('--') && a !== htmlOut && a !== csvOut);
 const fileIdx = args.indexOf('--file');
 if (fileIdx >= 0) {
   const text = await readFile(args[fileIdx + 1], 'utf8');
@@ -28,8 +32,12 @@ if (htmlIdx >= 0 && !htmlOut) {
   console.error('Error: --html needs an output file path.');
   process.exit(2);
 }
+if (csvIdx >= 0 && !csvOut) {
+  console.error('Error: --csv needs an output file path.');
+  process.exit(2);
+}
 if (!addresses.length) {
-  console.log('Usage: node tracker.mjs [--json] [--html report.html] [--file wallets.txt] <address...>');
+  console.log('Usage: node tracker.mjs [--json] [--html report.html] [--csv report.csv] [--file wallets.txt] <address...>');
   process.exit(2);
 }
 const isEvm = (a) => /^0x[0-9a-fA-F]{40}$/.test(a);
@@ -67,6 +75,11 @@ try {
 if (htmlOut) {
   await writeFile(htmlOut, renderHtml(report, grandTotal), 'utf8');
   console.error('Wrote HTML report: ' + htmlOut);
+}
+
+if (csvOut) {
+  await writeFile(csvOut, renderCsv(report, grandTotal), 'utf8');
+  console.error('Wrote CSV report: ' + csvOut);
 }
 
 if (jsonOut) { console.log(JSON.stringify(report, null, 2)); process.exit(0); }
