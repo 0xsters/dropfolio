@@ -20,12 +20,14 @@ node tracker.mjs 0xYourEvmAddress YourSolanaAddress AnotherEvmAddress
 node tracker.mjs --file wallets.txt
 node tracker.mjs --json 0xYourEvmAddress
 node tracker.mjs --html report.html 0xYourEvmAddress
+node tracker.mjs --csv report.csv 0xYourEvmAddress
 ```
 
 - Positional arguments: any mix of EVM (0x...) and Solana addresses; each is detected automatically.
 - `--file wallets.txt`: one address per line.
 - `--json`: machine-readable report for scripts.
 - `--html report.html`: also writes the same report as a single self-contained HTML page (inline CSS, no external files) that can be opened offline or shared as-is.
+- `--csv report.csv`: also writes the per-chain rows as CSV (one row per native balance and per nonzero token holding, with a total row per wallet and a grand-total row when several wallets are given), so the report opens in any spreadsheet. Failed reads stay visible as rows with a `read failed` status instead of a balance.
 
 Edit `airdrops.json` to track the programs you farm: name, chain, status, deadline, note.
 
@@ -58,7 +60,7 @@ For EVM chains the count is the account nonce, meaning outgoing transactions sen
 - SPL token balances per chain from a curated token list.
 - An HTML dashboard export (`--html report.html`) with the same data. (done 2026-11-17: new `html.mjs` renderer plus the `--html` flag in `tracker.mjs`; offline tests 6/6 pass, full pipeline verified end to end against a local stub RPC with console and HTML values identical.)
 - Active-days estimation per chain from transaction history.
-- CSV export for spreadsheets.
+- CSV export for spreadsheets. (done 2026-11-18: new `csv.mjs` renderer plus the `--csv` flag in `tracker.mjs`; offline tests 11/11 pass, full pipeline verified end to end against a local stub RPC with console, HTML, and CSV values identical.)
 
 ## License
 
