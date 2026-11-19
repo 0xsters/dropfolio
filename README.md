@@ -31,6 +31,20 @@ node tracker.mjs --csv report.csv 0xYourEvmAddress
 
 Edit `airdrops.json` to track the programs you farm: name, chain, status, deadline, note.
 
+## Tests
+
+```bash
+npm test
+```
+
+Runs offline with `node --test`, no RPC or network needed. Address
+detection (`addresses.mjs`) and all three report formats (console in
+`console.mjs`, HTML in `html.mjs`, CSV in `csv.mjs`) are tested against
+recorded fixtures in `test/fixtures/`: real values from the live runs
+against vitalik.eth (see `test/fixtures/README.md`), plus the boundary
+shapes around the EVM and Solana address formats. If a live value
+changes, update the fixture and the tests together.
+
 ## Example output
 
 Shortened from a live run on 16 November 2026 against the well-known public vitalik.eth address. Token rows are the ERC-20 holdings on each chain; in a full run every chain prints and the total covers all of them.
@@ -61,6 +75,7 @@ For EVM chains the count is the account nonce, meaning outgoing transactions sen
 - An HTML dashboard export (`--html report.html`) with the same data. (done 2026-11-17: new `html.mjs` renderer plus the `--html` flag in `tracker.mjs`; offline tests 6/6 pass, full pipeline verified end to end against a local stub RPC with console and HTML values identical.)
 - Active-days estimation per chain from transaction history.
 - CSV export for spreadsheets. (done 2026-11-18: new `csv.mjs` renderer plus the `--csv` flag in `tracker.mjs`; offline tests 11/11 pass, full pipeline verified end to end against a local stub RPC with console, HTML, and CSV values identical.)
+- Recorded-fixture tests for address detection and report formatting, runnable offline with `npm test`.
 
 ## License
 

@@ -69,3 +69,23 @@ test('escapeCsv quotes fields with commas, quotes, or line breaks', () => {
   assert.equal(escapeCsv('line1\nline2'), '"line1\nline2"');
   assert.equal(escapeCsv(null), '');
 });
+
+// The recorded fixture (test/fixtures/vitalik-report.json) is the shared
+// source for all three renderers: the same report must render the same
+// recorded values in HTML, CSV, and the console.
+test('recorded fixture renders the same values as the inline sample', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const report = JSON.parse(await readFile(new URL('./fixtures/vitalik-report.json', import.meta.url), 'utf8'));
+  const csv = renderCsv(report, 14960.84);
+  const lines = csv.trimEnd().split('\n');
+  assert.equal(lines[1], '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045,Ethereum,native,ETH,5.798970,5970,10558.65,ok');
+  assert.equal(lines[2], '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045,Ethereum,token,USDT,291.368220,,291.20,ok');
+  assert.equal(lines[6], '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045,Ethereum,token,WBTC,,,,read failed: HTTP 500');
+  assert.equal(lines[10], '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045,BNB Chain,token,WBNB,0.000010,,0.01,ok');
+  assert.equal(lines[11], '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045,Zora,native,ETH,,,,read failed: timeout');
+  assert.equal(lines[12], '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045,,total,,,,14948.50,ok');
+  assert.equal(lines[13], 'So11111111111111111111111111111111111111112,Solana,native,SOL,0.050000,1000+,12.34,ok');
+  assert.equal(lines[14], 'So11111111111111111111111111111111111111112,,total,,,,12.34,ok');
+  assert.equal(lines[15], 'ALL WALLETS,,grand_total,,,,14960.84,ok');
+  assert.equal(lines.length, 16);
+});

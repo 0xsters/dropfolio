@@ -11,7 +11,7 @@ export function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
-const fmtUsd = (v) => (v == null ? 'n/a' : '$' + v.toLocaleString('en-US', { maximumFractionDigits: 2 }));
+const fmtUsd = (v) => (v == null ? 'n/a' : '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
 const fmtBalance = (balance, symbol) => balance.toFixed(6) + ' ' + symbol;
 
 function walletSection(w) {
