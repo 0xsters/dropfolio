@@ -72,3 +72,19 @@ test('failed chain rows print the error and keep the report going', () => {
   const html = renderHtml(report, 10962.19);
   assert.match(html, /Zora<\/td><td colspan="3">read failed: timeout/);
 });
+
+// The recorded fixture (test/fixtures/vitalik-report.json) is the shared
+// source for all three renderers: the same report must render the same
+// recorded values in HTML, CSV, and the console.
+test('recorded fixture renders the same values as the inline sample', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const report = JSON.parse(await readFile(new URL('./fixtures/vitalik-report.json', import.meta.url), 'utf8'));
+  const html = renderHtml(report, 14960.84);
+  assert.match(html, /5\.798970 ETH/);
+  assert.match(html, /291\.368220 USDT/);
+  assert.match(html, /\$14,948\.50/);
+  assert.match(html, /All wallets total: \$14,960\.84/);
+  assert.match(html, /read failed: HTTP 500/);
+  assert.match(html, /Zora<\/td><td colspan="3">read failed: timeout/);
+  assert.match(html, /1000\+/);
+});
